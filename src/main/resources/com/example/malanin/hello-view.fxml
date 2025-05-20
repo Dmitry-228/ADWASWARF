@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.malanin.HelloController">
+    <top>
+        <HBox spacing="10" style="-fx-background-color: #e8f5e9; -fx-padding: 10;">
+            <VBox spacing="5">
+                <Label text="Модель дрона:"/>
+                <ComboBox fx:id="droneModelComboBox" prefWidth="200">
+                    <tooltip>
+                        <Tooltip text="Выберите модель дрона из списка"/>
+                    </tooltip>
+                </ComboBox>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Тип операции:"/>
+                <ComboBox fx:id="operationTypeComboBox" prefWidth="150">
+                    <tooltip>
+                        <Tooltip text="Выберите тип операции"/>
+                    </tooltip>
+                </ComboBox>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Расход препарата (л):"/>
+                <TextField fx:id="chemicalUsageField">
+                    <tooltip>
+                        <Tooltip text="Введите количество израсходованного препарата"/>
+                    </tooltip>
+                </TextField>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Время работы (мин):"/>
+                <TextField fx:id="flightTimeField">
+                    <tooltip>
+                        <Tooltip text="Введите продолжительность полета"/>
+                    </tooltip>
+                </TextField>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Дата:"/>
+                <DatePicker fx:id="datePicker">
+                    <tooltip>
+                        <Tooltip text="Выберите дату полета"/>
+                    </tooltip>
+                </DatePicker>
+            </VBox>
+
+            <VBox spacing="5" alignment="BOTTOM_CENTER">
+                <Button text="Добавить полет" onAction="#handleAddFlight" style="-fx-background-color: #81c784; -fx-text-fill: white;">
+                    <tooltip>
+                        <Tooltip text="Добавить запись о полете"/>
+                    </tooltip>
+                </Button>
+            </VBox>
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane>
+            <Tab text="Журнал полетов">
+                <TableView fx:id="flightTable">
+                    <columns>
+                        <TableColumn fx:id="dateColumn" text="Дата" prefWidth="100"/>
+                        <TableColumn fx:id="droneColumn" text="Модель дрона" prefWidth="150"/>
+                        <TableColumn fx:id="operationColumn" text="Тип операции" prefWidth="120"/>
+                        <TableColumn fx:id="chemicalColumn" text="Расход (л)" prefWidth="80"/>
+                        <TableColumn fx:id="timeColumn" text="Время (мин)" prefWidth="80"/>
+                    </columns>
+                </TableView>
+            </Tab>
+
+            <Tab text="Диаграмма Ганта">
+                <StackPane fx:id="ganttChartPane" style="-fx-padding: 10;"/>
+            </Tab>
+
+            <Tab text="Карта зон обработки">
+                <WebView fx:id="mapWebView"/>
+            </Tab>
+
+            <Tab text="Сводная таблица затрат">
+                <TableView fx:id="summaryTable">
+                    <columns>
+                        <TableColumn fx:id="summaryDroneColumn" text="Модель дрона" prefWidth="150"/>
+                        <TableColumn fx:id="summaryFlightsColumn" text="Кол-во полетов" prefWidth="100"/>
+                        <TableColumn fx:id="summaryTimeColumn" text="Общее время (мин)" prefWidth="120"/>
+                        <TableColumn fx:id="summaryChemicalColumn" text="Общий расход (л)" prefWidth="120"/>
+                        <TableColumn fx:id="summaryEfficiencyColumn" text="Эффективность (л/мин)" prefWidth="120"/>
+                    </columns>
+                </TableView>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" style="-fx-background-color: #e8f5e9; -fx-padding: 5;" alignment="CENTER">
+            <Button text="Автоотчет" onAction="#handleGenerateReport" style="-fx-background-color: #64b5f6; -fx-text-fill: white;"/>
+            <Button text="Обновить визуализацию" onAction="#handleUpdateVisualization" style="-fx-background-color: #4db6ac; -fx-text-fill: white;"/>
+        </HBox>
+    </bottom>
+</BorderPane>
