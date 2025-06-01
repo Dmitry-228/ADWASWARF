@@ -62,7 +62,7 @@ public class HelloController {
         setupSummaryTable();
 
         // Загрузка карты
-        mapWebView.getEngine().load("https://www.google.com/maps/@45.035470,38.975313,12z");
+        mapWebView.getEngine().load("https://yandex.ru/maps/36/stavropol/?ll=41.980713%2C45.037638&z=12.4");
     }
 
     private void setupFlightTable() {
