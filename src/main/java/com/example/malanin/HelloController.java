@@ -151,6 +151,19 @@ public class HelloController {
     }
 
     @FXML
+    private void handleDeleteFlight() {
+        FlightRecord selected = flightTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            flightData.remove(selected);
+            updateVisualizations();
+            showAlert("Удалено", "Полет успешно удален из журнала.");
+        } else {
+            showAlert("Ошибка", "Выберите запись в таблице для удаления.");
+        }
+    }
+
+
+    @FXML
     private void handleUpdateVisualization() {
         updateVisualizations();
         showAlert("Обновлено", "Визуализации обновлены");

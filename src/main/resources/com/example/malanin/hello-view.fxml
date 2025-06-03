@@ -60,6 +60,12 @@
                         <Tooltip text="Добавить запись о полете"/>
                     </tooltip>
                 </Button>
+                <Button text="Удалить полет" onAction="#handleDeleteFlight"
+                        style="-fx-background-color: #e57373; -fx-text-fill: white;">
+                    <tooltip>
+                        <Tooltip text="Удалить выбранную запись из журнала"/>
+                    </tooltip>
+                </Button>
             </VBox>
         </HBox>
     </top>
