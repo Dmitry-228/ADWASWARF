@@ -62,7 +62,7 @@ public class HelloController {
         setupSummaryTable();
 
         // Загрузка карты
-        mapWebView.getEngine().load("https://yandex.ru/maps/36/stavropol/?ll=41.980713%2C45.037638&z=12.4");
+        updateFlightMap();
     }
 
     private void setupFlightTable() {
@@ -239,74 +239,94 @@ public class HelloController {
     }
 
     private void updateFlightMap() {
-        if (flightData.isEmpty()) return;
-
         StringBuilder html = new StringBuilder();
         html.append("""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Карта зон обработки</title>
-                <style>
-                    #map { height: 100%; width: 100%; }
-                    .info-window { padding: 10px; }
-                </style>
-            </head>
-            <body>
-            <div id="map"></div>
-            <script>
-                var map = new google.maps.Map(document.getElementById('map'), {
-                    center: {lat: 45.035470, lng: 38.975313},
-                    zoom: 12
-                });
-            """);
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Карта полетов</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <style>
+                html, body, #map {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    padding: 0;
+                }
+            </style>
+        </head>
+        <body>
+        <div id="map"></div>
+        <script>
+            var map = L.map('map');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
 
-        // Добавляем маркеры для каждого полета
-        int i = 1;
+            function getMarkerIcon(color) {
+icon: L.icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+})
+
+            }
+
+            var bounds = L.latLngBounds([]);
+        """);
+
+
         for (FlightRecord record : flightData) {
-            html.append(String.format("""
-                var marker%d = new google.maps.Marker({
-                    position: {lat: %f + Math.random()*0.01, lng: %f + Math.random()*0.01},
-                    map: map,
-                    title: "%s - %s"
-                });
-                
-                var infoWindow%d = new google.maps.InfoWindow({
-                    content: '<div class="info-window">' +
-                             '<h3>%s</h3>' +
-                             '<p>Дата: %s</p>' +
-                             '<p>Тип: %s</p>' +
-                             '<p>Время: %d мин</p>' +
-                             '<p>Расход: %.2f л</p>' +
-                             '</div>'
-                });
-                
-                marker%d.addListener('click', function() {
-                    infoWindow%d.open(map, marker%d);
-                });
-                """,
-                    i, 45.035470, 38.975313, record.getDroneModel(), record.getFormattedDate(),
-                    i,
-                    record.getDroneModel(),
-                    record.getFormattedDate(),
-                    record.getOperationType(),
-                    record.getFlightTime(),
-                    record.getChemicalUsage(),
-                    i, i, i));
-            i++;
+            String color;
+            switch (record.getOperationType()) {
+                case "Опрыскивание" -> color = "green";
+                case "Мониторинг" -> color = "blue";
+                default -> color = "red";
+            }
+
+            // Случайные координаты в пределах Ставропольского края
+            double lat = 44.8 + Math.random() * 0.4;
+            double lng = 41.5 + Math.random() * 1.5;
+
+            String popupText = "<b>" + record.getDroneModel() + "</b><br>Дата: " + record.getFormattedDate() +
+                    "<br>Тип: " + record.getOperationType() +
+                    "<br>Время: " + record.getFlightTime() + " мин" +
+                    "<br>Расход: " + String.format("%.2f", record.getChemicalUsage()) + " л";
+
+            html.append("L.marker([").append(lat).append(", ").append(lng).append("], ")
+                    .append("{icon: L.icon({")
+                    .append("iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',")
+                    .append("shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',")
+                    .append("iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]")
+                    .append("})})")
+                    .append(".addTo(map).bindPopup('").append(popupText).append("');\n")
+                    .append("bounds.extend([").append(lat).append(", ").append(lng).append("]);\n");
         }
 
+        // Закрытие скрипта и HTML
         html.append("""
-            </script>
-            <script async defer
-                src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
-            </script>
-            </body>
-            </html>
-            """);
+            if (bounds.isValid()) {
+                map.fitBounds(bounds);
+            } else {
+                map.setView([45.05, 41.98], 9);
+            }
+        </script>
+        </body>
+        </html>
+        """);
 
+        // Загрузка карты в WebView
         mapWebView.getEngine().loadContent(html.toString());
     }
+
+
+
 
     @FXML
     private void handleGenerateReport() {
