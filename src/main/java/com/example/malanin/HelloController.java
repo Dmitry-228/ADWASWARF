@@ -13,6 +13,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
+import javafx.stage.Modality;
+import javax.swing.JFileChooser;
+import java.io.File;
+import java.io.FileOutputStream;
+import com.lowagie.text.Document;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
+
+
 
 public class HelloController {
     // Поля ввода
@@ -337,18 +352,58 @@ icon: L.icon({
 
         double totalChemical = flightData.stream().mapToDouble(FlightRecord::getChemicalUsage).sum();
         int totalTime = flightData.stream().mapToInt(FlightRecord::getFlightTime).sum();
+        double avgEfficiency = totalTime > 0 ? totalChemical / totalTime : 0;
 
         String report = String.format(
                 "Сводный отчет:\n\n" +
                         "Всего полетов: %d\n" +
                         "Общий расход препарата: %.2f л\n" +
                         "Общее время работы: %d мин\n" +
-                        "Средняя эффективность: %.2f л/мин",
-                flightData.size(), totalChemical, totalTime,
-                totalTime > 0 ? totalChemical / totalTime : 0
+                        "Средняя эффективность: %.2f л/мин\n\n",
+                flightData.size(), totalChemical, totalTime, avgEfficiency
         );
 
-        showAlert("Отчет", report);
+        // Создание окна
+        Stage stage = new Stage();
+        stage.setTitle("Автоотчет");
+
+        TextArea reportArea = new TextArea(report);
+        reportArea.setEditable(false);
+        reportArea.setWrapText(true);
+
+        Button savePdfBtn = new Button("Сохранить в PDF");
+        savePdfBtn.setOnAction(e -> {
+            try {
+                saveReportAsPdf(reportArea.getText());
+            } catch (Exception ex) {
+                showAlert("Ошибка", "Не удалось сохранить PDF: " + ex.getMessage());
+            }
+        });
+
+        VBox layout = new VBox(10, reportArea, savePdfBtn);
+        layout.setPadding(new Insets(10));
+        layout.setPrefSize(500, 400);
+
+        stage.setScene(new Scene(layout));
+        stage.show();
+    }
+
+    private void saveReportAsPdf(String content) throws Exception {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Сохранить отчет как PDF");
+        chooser.setSelectedFile(new File("report.pdf"));
+        int userSelection = chooser.showSaveDialog(null);
+        if (userSelection != JFileChooser.APPROVE_OPTION) return;
+
+        File fileToSave = chooser.getSelectedFile();
+
+        com.lowagie.text.Document document = new com.lowagie.text.Document();
+        com.lowagie.text.pdf.PdfWriter.getInstance(document, new FileOutputStream(fileToSave));
+        document.open();
+        document.add(new com.lowagie.text.Paragraph(content));
+        document.close();
+
+        showAlert("Успех", "PDF успешно сохранён:\n" + fileToSave.getAbsolutePath());
     }
 
     private void clearInputFields() {
