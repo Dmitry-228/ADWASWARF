@@ -383,7 +383,6 @@ icon: L.icon({
         VBox layout = new VBox(10, reportArea, savePdfBtn);
         layout.setPadding(new Insets(10));
         layout.setPrefSize(500, 400);
-
         stage.setScene(new Scene(layout));
         stage.show();
     }

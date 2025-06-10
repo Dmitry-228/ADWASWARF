@@ -75,8 +75,8 @@
             <Tab text="Журнал полетов">
                 <TableView fx:id="flightTable">
                     <columns>
-                        <TableColumn fx:id="dateColumn" text="Дата" prefWidth="100"/>
-                        <TableColumn fx:id="droneColumn" text="Модель дрона" prefWidth="150"/>
+                        <TableColumn fx:id="dateColumn" text="Дата" prefWidth="100" sortable="true"/>
+                        <TableColumn fx:id="droneColumn" text="Модель дрона" prefWidth="150" sortable="true"/>
                         <TableColumn fx:id="operationColumn" text="Тип операции" prefWidth="120"/>
                         <TableColumn fx:id="chemicalColumn" text="Расход (л)" prefWidth="80"/>
                         <TableColumn fx:id="timeColumn" text="Время (мин)" prefWidth="80"/>
