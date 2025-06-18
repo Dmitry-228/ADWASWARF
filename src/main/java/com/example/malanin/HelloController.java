@@ -8,11 +8,13 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
@@ -20,41 +22,69 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
 import javafx.stage.Modality;
+
 import javax.swing.JFileChooser;
 import java.io.File;
 import java.io.FileOutputStream;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 
 
-
 public class HelloController {
     // Поля ввода
-    @FXML private ComboBox<String> droneModelComboBox;
-    @FXML private ComboBox<String> operationTypeComboBox;
-    @FXML private TextField chemicalUsageField;
-    @FXML private TextField flightTimeField;
-    @FXML private DatePicker datePicker;
+    @FXML
+    private ComboBox<String> droneModelComboBox;
+    @FXML
+    private ComboBox<String> operationTypeComboBox;
+    @FXML
+    private TextField chemicalUsageField;
+    @FXML
+    private TextField flightTimeField;
+    @FXML
+    private DatePicker datePicker;
+    @FXML
+    private TextField latitudeField;
+    @FXML
+    private TextField longitudeField;
 
     // Таблицы
-    @FXML private TableView<FlightRecord> flightTable;
-    @FXML private TableColumn<FlightRecord, String> dateColumn;
-    @FXML private TableColumn<FlightRecord, String> droneColumn;
-    @FXML private TableColumn<FlightRecord, String> operationColumn;
-    @FXML private TableColumn<FlightRecord, Double> chemicalColumn;
-    @FXML private TableColumn<FlightRecord, Integer> timeColumn;
+    @FXML
+    private TableView<FlightRecord> flightTable;
+    @FXML
+    private TableColumn<FlightRecord, String> dateColumn;
+    @FXML
+    private TableColumn<FlightRecord, String> droneColumn;
+    @FXML
+    private TableColumn<FlightRecord, String> operationColumn;
+    @FXML
+    private TableColumn<FlightRecord, Double> chemicalColumn;
+    @FXML
+    private TableColumn<FlightRecord, Integer> timeColumn;
+    @FXML
+    private TableColumn<FlightRecord, Double> latitudeColumn;
+    @FXML
+    private TableColumn<FlightRecord, Double> longitudeColumn;
 
-    @FXML private TableView<SummaryRecord> summaryTable;
-    @FXML private TableColumn<SummaryRecord, String> summaryDroneColumn;
-    @FXML private TableColumn<SummaryRecord, Integer> summaryFlightsColumn;
-    @FXML private TableColumn<SummaryRecord, Integer> summaryTimeColumn;
-    @FXML private TableColumn<SummaryRecord, Double> summaryChemicalColumn;
-    @FXML private TableColumn<SummaryRecord, Double> summaryEfficiencyColumn;
+    @FXML
+    private TableView<SummaryRecord> summaryTable;
+    @FXML
+    private TableColumn<SummaryRecord, String> summaryDroneColumn;
+    @FXML
+    private TableColumn<SummaryRecord, Integer> summaryFlightsColumn;
+    @FXML
+    private TableColumn<SummaryRecord, Integer> summaryTimeColumn;
+    @FXML
+    private TableColumn<SummaryRecord, Double> summaryChemicalColumn;
+    @FXML
+    private TableColumn<SummaryRecord, Double> summaryEfficiencyColumn;
 
     // Визуализация
-    @FXML private StackPane ganttChartPane;
-    @FXML private WebView mapWebView;
+    @FXML
+    private StackPane ganttChartPane;
+    @FXML
+    private WebView mapWebView;
 
     private final ObservableList<FlightRecord> flightData = FXCollections.observableArrayList();
     private final ObservableList<SummaryRecord> summaryData = FXCollections.observableArrayList();
@@ -86,6 +116,8 @@ public class HelloController {
         operationColumn.setCellValueFactory(new PropertyValueFactory<>("operationType"));
         chemicalColumn.setCellValueFactory(new PropertyValueFactory<>("chemicalUsage"));
         timeColumn.setCellValueFactory(new PropertyValueFactory<>("flightTime"));
+        latitudeColumn.setCellValueFactory(new PropertyValueFactory<>("latitude"));
+        longitudeColumn.setCellValueFactory(new PropertyValueFactory<>("longitude"));
 
         chemicalColumn.setCellFactory(tc -> new TableCell<FlightRecord, Double>() {
             @Override
@@ -100,6 +132,22 @@ public class HelloController {
             protected void updateItem(Integer value, boolean empty) {
                 super.updateItem(value, empty);
                 setText(empty ? null : value + " мин");
+            }
+        });
+
+        latitudeColumn.setCellFactory(tc -> new TableCell<FlightRecord, Double>() {
+            @Override
+            protected void updateItem(Double value, boolean empty) {
+                super.updateItem(value, empty);
+                setText(empty ? null : String.format("%.4f", value));
+            }
+        });
+
+        longitudeColumn.setCellFactory(tc -> new TableCell<FlightRecord, Double>() {
+            @Override
+            protected void updateItem(Double value, boolean empty) {
+                super.updateItem(value, empty);
+                setText(empty ? null : String.format("%.4f", value));
             }
         });
 
@@ -142,6 +190,8 @@ public class HelloController {
 
             double chemicalUsage = Double.parseDouble(chemicalUsageField.getText());
             int flightTime = Integer.parseInt(flightTimeField.getText());
+            double latitude = Double.parseDouble(latitudeField.getText());
+            double longitude = Double.parseDouble(longitudeField.getText());
 
             if (chemicalUsage <= 0 || flightTime <= 0) {
                 showAlert("Ошибка", "Значения должны быть больше нуля");
@@ -153,7 +203,9 @@ public class HelloController {
                     droneModelComboBox.getValue(),
                     operationTypeComboBox.getValue(),
                     chemicalUsage,
-                    flightTime
+                    flightTime,
+                    latitude,
+                    longitude
             );
 
             flightData.add(record);
@@ -162,6 +214,8 @@ public class HelloController {
             showAlert("Успех", "Полет успешно добавлен в журнал");
         } catch (NumberFormatException e) {
             showAlert("Ошибка", "Введите корректные числовые значения");
+        } catch (IllegalArgumentException e) {
+            showAlert("Ошибка", e.getMessage());
         }
     }
 
@@ -256,47 +310,44 @@ public class HelloController {
     private void updateFlightMap() {
         StringBuilder html = new StringBuilder();
         html.append("""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8" />
-            <title>Карта полетов</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-            <style>
-                html, body, #map {
-                    height: 100%;
-                    width: 100%;
-                    margin: 0;
-                    padding: 0;
-                }
-            </style>
-        </head>
-        <body>
-        <div id="map"></div>
-        <script>
-            var map = L.map('map');
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            function getMarkerIcon(color) {
-icon: L.icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-})
-
-            }
-
-            var bounds = L.latLngBounds([]);
-        """);
-
-
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8" />
+                    <title>Карта полетов</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                    <style>
+                        html, body, #map {
+                            height: 100%;
+                            width: 100%;
+                            margin: 0;
+                            padding: 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                <div id="map"></div>
+                <script>
+                    var map = L.map('map');
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+                
+                    function getMarkerIcon(color) {
+                        return L.icon({
+                            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        });
+                    }
+                
+                    var bounds = L.latLngBounds([]);
+                """);
         for (FlightRecord record : flightData) {
             String color;
             switch (record.getOperationType()) {
@@ -305,42 +356,30 @@ icon: L.icon({
                 default -> color = "red";
             }
 
-            // Случайные координаты в пределах Ставропольского края
-            double lat = 44.8 + Math.random() * 0.4;
-            double lng = 41.5 + Math.random() * 1.5;
-
             String popupText = "<b>" + record.getDroneModel() + "</b><br>Дата: " + record.getFormattedDate() +
                     "<br>Тип: " + record.getOperationType() +
                     "<br>Время: " + record.getFlightTime() + " мин" +
                     "<br>Расход: " + String.format("%.2f", record.getChemicalUsage()) + " л";
 
-            html.append("L.marker([").append(lat).append(", ").append(lng).append("], ")
-                    .append("{icon: L.icon({")
-                    .append("iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',")
-                    .append("shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',")
-                    .append("iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]")
-                    .append("})})")
+            html.append("L.marker([").append(record.getLatitude()).append(", ").append(record.getLongitude()).append("], ")
+                    .append("{icon: getMarkerIcon('").append(color).append("')})")
                     .append(".addTo(map).bindPopup('").append(popupText).append("');\n")
-                    .append("bounds.extend([").append(lat).append(", ").append(lng).append("]);\n");
+                    .append("bounds.extend([").append(record.getLatitude()).append(", ").append(record.getLongitude()).append("]);\n");
         }
 
-        // Закрытие скрипта и HTML
         html.append("""
-            if (bounds.isValid()) {
-                map.fitBounds(bounds);
-            } else {
-                map.setView([45.05, 41.98], 9);
-            }
-        </script>
-        </body>
-        </html>
-        """);
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds);
+                } else {
+                    map.setView([45.05, 41.98], 9);
+                }
+                </script>
+                </body>
+                </html>
+                """);
 
-        // Загрузка карты в WebView
         mapWebView.getEngine().loadContent(html.toString());
     }
-
-
 
 
     @FXML
@@ -408,6 +447,8 @@ icon: L.icon({
     private void clearInputFields() {
         chemicalUsageField.clear();
         flightTimeField.clear();
+        latitudeField.clear();
+        longitudeField.clear();
     }
 
     private void showAlert(String title, String message) {
@@ -424,14 +465,18 @@ icon: L.icon({
         private final String operationType;
         private final double chemicalUsage;
         private final int flightTime;
+        private double latitude;
+        private double longitude;
 
         public FlightRecord(LocalDate date, String droneModel, String operationType,
-                            double chemicalUsage, int flightTime) {
+                            double chemicalUsage, int flightTime, double latitude, double longitude) {
             this.date = date;
             this.droneModel = droneModel;
             this.operationType = operationType;
             this.chemicalUsage = chemicalUsage;
             this.flightTime = flightTime;
+            setLatitude(latitude);
+            setLongitude(longitude);
         }
 
         public String getFormattedDate() {
@@ -453,42 +498,64 @@ icon: L.icon({
         public int getFlightTime() {
             return flightTime;
         }
+
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public void setLatitude(double latitude) {
+            if (latitude < -90 || latitude > 90) {
+                throw new IllegalArgumentException("Широта должна быть между -90 и 90 градусами");
+            }
+            this.latitude = latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public void setLongitude(double longitude) {
+            if (longitude < -180 || longitude > 180) {
+                throw new IllegalArgumentException("Долгота должна быть между -180 и 180 градусами");
+            }
+            this.longitude = longitude;
+        }
+    }
+}
+
+class SummaryRecord {
+    private final String droneModel;
+    private final int flightsCount;
+    private final int totalTime;
+    private final double totalChemical;
+    private final double efficiency;
+
+    public SummaryRecord(String droneModel, int flightsCount,
+                         int totalTime, double totalChemical, double efficiency) {
+        this.droneModel = droneModel;
+        this.flightsCount = flightsCount;
+        this.totalTime = totalTime;
+        this.totalChemical = totalChemical;
+        this.efficiency = efficiency;
     }
 
-    public static class SummaryRecord {
-        private final String droneModel;
-        private final int flightsCount;
-        private final int totalTime;
-        private final double totalChemical;
-        private final double efficiency;
+    public String getDroneModel() {
+        return droneModel;
+    }
 
-        public SummaryRecord(String droneModel, int flightsCount,
-                             int totalTime, double totalChemical, double efficiency) {
-            this.droneModel = droneModel;
-            this.flightsCount = flightsCount;
-            this.totalTime = totalTime;
-            this.totalChemical = totalChemical;
-            this.efficiency = efficiency;
-        }
+    public int getFlightsCount() {
+        return flightsCount;
+    }
 
-        public String getDroneModel() {
-            return droneModel;
-        }
+    public int getTotalTime() {
+        return totalTime;
+    }
 
-        public int getFlightsCount() {
-            return flightsCount;
-        }
+    public double getTotalChemical() {
+        return totalChemical;
+    }
 
-        public int getTotalTime() {
-            return totalTime;
-        }
-
-        public double getTotalChemical() {
-            return totalChemical;
-        }
-
-        public double getEfficiency() {
-            return efficiency;
-        }
+    public double getEfficiency() {
+        return efficiency;
     }
 }

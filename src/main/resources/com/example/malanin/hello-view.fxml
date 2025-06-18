@@ -54,6 +54,24 @@
                 </DatePicker>
             </VBox>
 
+            <VBox spacing="5">
+                <Label text="Широта:"/>
+                <TextField fx:id="latitudeField">
+                    <tooltip>
+                        <Tooltip text="Введите широту места полета (например: 44.9832)"/>
+                    </tooltip>
+                </TextField>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Долгота:"/>
+                <TextField fx:id="longitudeField">
+                    <tooltip>
+                        <Tooltip text="Введите долготу места полета (например: 41.1234)"/>
+                    </tooltip>
+                </TextField>
+            </VBox>
+
             <VBox spacing="5" alignment="BOTTOM_CENTER">
                 <Button text="Добавить полет" onAction="#handleAddFlight" style="-fx-background-color: #81c784; -fx-text-fill: white;">
                     <tooltip>
@@ -80,6 +98,8 @@
                         <TableColumn fx:id="operationColumn" text="Тип операции" prefWidth="120"/>
                         <TableColumn fx:id="chemicalColumn" text="Расход (л)" prefWidth="80"/>
                         <TableColumn fx:id="timeColumn" text="Время (мин)" prefWidth="80"/>
+                        <TableColumn fx:id="latitudeColumn" text="Широта" prefWidth="80"/>
+                        <TableColumn fx:id="longitudeColumn" text="Долгота" prefWidth="80"/>
                     </columns>
                 </TableView>
             </Tab>
